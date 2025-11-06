@@ -1,0 +1,10 @@
+torch>=1.12
+transformers>=4.20
+datasets
+scikit-learn
+pandas
+pytest
+pytest-cov
+black
+ruff
+REQ
