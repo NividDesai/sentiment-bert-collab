@@ -1,15 +1,17 @@
 """
 data_extraction.py
-Functions to load the dataset safely.
+Functions to load the dataset safely and derive sentiment labels.
 """
 import pandas as pd
-from typing import Tuple
+from typing import List
 
-EXPECTED_COLUMNS = ["text", "label"]  # adapt to your dataset columns
+# Expected columns from your dataset
+EXPECTED_COLUMNS = ["content", "score"]
 
 def load_csv(path: str) -> pd.DataFrame:
     """
-    Load CSV into a DataFrame. Raises ValueError if columns missing.
+    Load CSV into a DataFrame, verify required columns, 
+    and create a 'label' column derived from 'score'.
     """
     try:
         df = pd.read_csv(path)
@@ -22,6 +24,13 @@ def load_csv(path: str) -> pd.DataFrame:
     if missing:
         raise ValueError(f"Missing expected columns: {missing}")
 
-    # Basic cleaning: drop NA in essential cols
-    df = df.dropna(subset=EXPECTED_COLUMNS).reset_index(drop=True)
-    return df
+    # Keep only relevant columns
+    df = df[["content", "score"]].dropna().reset_index(drop=True)
+
+    # Create sentiment label from score
+    df["label"] = df["score"].apply(lambda x: 1 if x >= 3 else 0)
+
+    # Rename content → text for compatibility with rest of pipeline
+    df = df.rename(columns={"content": "text"})
+
+    return df[["text", "label", "score"]]
