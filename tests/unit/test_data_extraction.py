@@ -7,7 +7,7 @@ TEST_CSV = "tests/fixtures/test_dataset.csv"
 
 def setup_module(module):
     os.makedirs("tests/fixtures", exist_ok=True)
-    df = pd.DataFrame({"text": ["good", "bad"], "label": [1, 0]})
+    df = pd.DataFrame({"content": ["good", "bad"], "score": [5, 1]})
     df.to_csv(TEST_CSV, index=False)
 
 def teardown_module(module):
@@ -19,7 +19,8 @@ def teardown_module(module):
 def test_load_csv_success():
     df = load_csv(TEST_CSV)
     assert isinstance(df, pd.DataFrame)
-    assert list(df.columns) == ["text", "label"]
+    assert list(df.columns) == ["text", "label", "score"]
+
     assert len(df) == 2
 
 def test_load_csv_missing_file():
