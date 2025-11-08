@@ -524,4 +524,3 @@ pre-commit run --all-files
 
 
 
->>>>>>> Stashed changes

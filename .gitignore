@@ -1,8 +1,88 @@
+# Python
 __pycache__/
-.env
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# PyCharm
+.idea/
+
+# VS Code
 .vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Model outputs
+outputs/
+evaluation/
+test_outputs/
 *.ckpt
 *.pth
+*.bin
+checkpoint-*/
+final_model/
+
+# Data
 data/
-GIT
+*.csv.gz
+*.parquet
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Large files
+*.h5
+*.pkl
+*.pickle
+
+# Coverage reports
+coverage.xml
