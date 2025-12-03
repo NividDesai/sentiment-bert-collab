@@ -2,15 +2,17 @@
 data_extraction.py
 Functions to load the dataset safely and derive sentiment labels.
 """
+
 import pandas as pd
 from typing import List
 
 # Expected columns from your dataset
 EXPECTED_COLUMNS = ["content", "score"]
 
+
 def load_csv(path: str) -> pd.DataFrame:
     """
-    Load CSV into a DataFrame, verify required columns, 
+    Load CSV into a DataFrame, verify required columns,
     and create a 'label' column derived from 'score'.
     """
     try:

@@ -52,6 +52,7 @@ htmlcov/
 outputs/
 evaluation/
 test_outputs/
+test_model_temp/
 *.ckpt
 *.pth
 *.bin
