@@ -520,7 +520,280 @@ pre-commit run --all-files
   - See `COVERAGE_ACHIEVEMENT.md` for details
 - **CI/CD**: Automated testing on push/PR
 
+```
+- `train_val_split(df)`: Creates stratified train/validation split (80/20)
+
+**Usage:**
+```python
+from src.data_processing import get_tokenizer, tokenize_dataframe, train_val_split
+tokenizer = get_tokenizer("bert-base-uncased")
+tokenized = tokenize_dataframe(df, tokenizer, max_length=128)
+train_df, val_df = train_val_split(df, test_size=0.2)
+```
+
+#### `model.py`
+**Purpose:** BERT model architecture and training
+
+**Key Functions:**
+- `build_model(model_name, num_labels)`: Creates BERT classification model
+- `train_model(...)`: Trains model using Hugging Face Trainer
+- `hf_dataset_from_tensors(...)`: Converts tensors to HuggingFace Dataset
+
+**Usage:**
+```python
+from src.model import build_model, train_model
+model = build_model(num_labels=2)
+trainer, eval_results = train_model(model, train_data, val_data, epochs=3)
+```
+
+#### `inference.py`
+**Purpose:** Model loading and sentiment prediction
+
+**Key Functions:**
+- `load_model(model_path, device)`: Loads trained model and tokenizer
+- `predict_sentiment(text, model, tokenizer)`: Predicts sentiment for single text
+- `predict_batch(texts, model, tokenizer)`: Batch prediction for multiple texts
+
+**Usage:**
+```python
+from src.inference import load_model, predict_sentiment
+model, tokenizer, device = load_model("final_model/", device="cpu")
+result = predict_sentiment("This app is great!", model, tokenizer, device)
+# Returns: {'text': '...', 'sentiment': 'Positive', 'confidence': 0.95, ...}
+```
+
+#### `tokenize_helper.py`
+**Purpose:** Tokenization utilities (legacy, functionality moved to `data_processing.py`)
+
+#### `utils.py`
+**Purpose:** Utility functions for data splitting
+
+**Key Functions:**
+- `train_val_split(df, test_size, random_state)`: Stratified train/validation split
+
+### Scripts
+
+#### `train.py`
+**Purpose:** Main training script with CLI interface
+
+**Features:**
+- Command-line arguments for hyperparameters
+- Full training pipeline (load → split → tokenize → train → evaluate)
+- Generates confusion matrix visualization
+- Saves model and metrics to disk
+- Progress logging throughout
+
+**Example:**
+```bash
+python train.py --data dataset.csv --epochs 3 --batch-size 8 --output-dir ./outputs
+```
+
+#### `inference.py`
+**Purpose:** Command-line interface for sentiment prediction
+
+**Features:**
+- Single text prediction (`--text`)
+- Batch prediction from file (`--file`)
+- Displays sentiment, confidence, and probabilities
+- Supports both CPU and GPU
+
+**Example:**
+```bash
+python inference.py --model-path final_model/ --text "This app is amazing!"
+python inference.py --model-path final_model/ --file reviews.txt
+```
+
+#### `evaluate.py`
+**Purpose:** Comprehensive model evaluation and visualization
+
+**Features:**
+- Confusion matrix heatmap
+- ROC curve with AUC
+- Precision-recall curve
+- Class distribution comparison
+- Confidence score distribution
+- Detailed metrics report (accuracy, precision, recall, F1)
+- Sample predictions export to CSV
+
+**Example:**
+```bash
+python evaluate.py --model-path final_model/ --data dataset.csv --output-dir evaluation/
+```
+
+### Testing (`tests/`)
+
+#### Unit Tests
+- **`test_data_extraction.py`**: 7 tests for data loading (100% coverage)
+- **`test_data_processing.py`**: 9 tests for tokenization and splitting (100% coverage)
+- **`test_model.py`**: 11 tests for model architecture and training (100% coverage)
+- **`test_inference.py`**: 10 tests for inference functions (100% coverage)
+- **`test_tokenize.py`**: Tokenizer tests
+- **`test_utils.py`**: 6 tests for utility functions (100% coverage)
+
+#### Integration Tests
+- **`test_train_integration.py`**: End-to-end pipeline test
+
+**Coverage:** 100% (111/111 statements) across all modules
+
+### CI/CD (`.github/workflows/`)
+
+#### `ci.yml`
+**Purpose:** Automated testing and quality checks
+
+**Features:**
+- Runs on every push and pull request
+- Executes all unit tests
+- Generates coverage reports
+- Checks code quality (Black, Ruff)
+- Fails if tests don't pass or coverage drops
+
+### Documentation (`report/`)
+
+#### `project_report.md`
+**Purpose:** Comprehensive project documentation
+
+**Contents:**
+- Executive summary
+- Methodology and approach
+- Implementation details
+- Testing strategy
+- Results and metrics
+- Challenges faced
+- Future improvements
+- Division of labor
+- GitHub and Trello screenshots
+
+## 📈 Model Performance
+
+### Metrics
+
+After training for 3 epochs on the full dataset:
+
+| Metric      | Value  |
+|-------------|--------|
+| Accuracy    | ~0.92  |
+| Precision   | ~0.91  |
+| Recall      | ~0.92  |
+| F1 Score    | ~0.91  |
+
+### Training Details
+
+- **Model**: BERT base uncased (110M parameters)
+- **Optimizer**: AdamW
+- **Learning rate**: 5e-5 (default from Trainer)
+- **Batch size**: 8
+- **Max sequence length**: 128 tokens
+- **Training time**: ~30 minutes on GPU (varies by hardware)
+
+## 🔧 Development
+
+### Code Quality
+
+The project enforces code quality through:
+
+1. **Black**: Code formatting (line length: 100)
+```bash
+black src/ tests/
+```
+
+2. **Ruff**: Fast Python linter
+```bash
+ruff check src/ tests/
+```
+
+3. **Pre-commit hooks**: Automatic checks before commits
+```bash
+pre-commit run --all-files
+```
+
+### Testing Strategy
+
+- **Unit tests**: Test individual functions and components
+- **Integration tests**: Test end-to-end pipeline
+- **Coverage achieved**: **100% code coverage** 🎯
+  - All 6 modules: 100% coverage
+  - 44 total tests (40 passed, 4 skipped)
+  - See `COVERAGE_ACHIEVEMENT.md` for details
+- **CI/CD**: Automated testing on push/PR
 
 
 
 
+
+## 🚢 Part 2: MLOps & Containerization
+
+This project has been enhanced with a complete MLOps pipeline including Docker containerization and automated CI/CD workflows.
+
+### 🐳 Docker Architecture
+
+The application is containerized using a multi-stage Dockerfile for optimal size and security.
+
+**Services (Docker Compose):**
+1. **sentiment-api**: FastAPI service serving the BERT model
+2. **mongodb**: Stores prediction logs and results
+3. **redis-cache**: Caches frequent predictions for low latency
+4. **prometheus**: Monitors system and model metrics
+5. **grafana**: Visualizes metrics in real-time dashboards
+
+**Running with Docker Compose:**
+```bash
+# Build and start all services
+docker-compose up -d --build
+
+# Check service status
+docker-compose ps
+
+# View logs
+docker-compose logs -f sentiment-api
+```
+
+**Access Points:**
+- **API Documentation**: http://localhost:8000/docs
+- **Grafana Dashboards**: http://localhost:3000 (admin/admin123)
+- **Prometheus**: http://localhost:9090
+
+### 🔄 CI/CD Pipeline (GitHub Actions)
+
+We have implemented a comprehensive 3-stage pipeline:
+
+1. **Test Workflow** (`test.yml`):
+   - Runs on every Push/PR
+   - Executes Unit & Integration Tests
+   - Checks Code Quality (Ruff, Black)
+   - Uploads Coverage Reports
+
+2. **Evaluation Workflow** (`evaluate.yml`):
+   - Runs after successful tests
+   - Evaluates model on test set
+   - Checks performance thresholds (Accuracy > 0.80)
+   - Generates and saves metrics artifacts
+
+3. **Build & Deploy Workflow** (`build.yml`):
+   - Runs after successful evaluation
+   - Builds optimized Docker image
+   - Scans for vulnerabilities (Trivy)
+   - Pushes to Docker Hub Registry
+
+### 🛠️ API Usage
+
+**Predict Sentiment:**
+```bash
+curl -X POST "http://localhost:8000/predict" \
+     -H "Content-Type: application/json" \
+     -d '{"text": "This app is fantastic!"}'
+```
+
+**Batch Prediction:**
+```bash
+curl -X POST "http://localhost:8000/batch" \
+     -H "Content-Type: application/json" \
+     -d '{"texts": ["Great app", "Bad experience"]}'
+```
+
+### 📊 Monitoring
+
+The system includes real-time monitoring:
+- **System Metrics**: CPU, Memory, Network usage
+- **Model Metrics**: Request count, Latency, Error rates
+- **Business Metrics**: Sentiment distribution, Confidence scores
+```
