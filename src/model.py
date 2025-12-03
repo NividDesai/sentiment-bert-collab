@@ -4,8 +4,6 @@ Defines model creation and a train function using Hugging Face Trainer
 """
 
 from transformers import AutoModelForSequenceClassification, Trainer, TrainingArguments
-import torch
-from typing import Dict
 import numpy as np
 from datasets import Dataset
 

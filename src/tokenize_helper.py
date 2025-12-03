@@ -1,5 +1,5 @@
 from transformers import AutoTokenizer
-from typing import Tuple, Dict, Any, List
+from typing import Dict, Any
 import pandas as pd
 
 

@@ -2,7 +2,7 @@ import torch
 import pandas as pd
 import numpy as np
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 from src.model import build_model, hf_dataset_from_tensors, train_model
 from src.tokenize_helper import get_tokenizer, tokenize_dataframe
 from transformers import AutoTokenizer
@@ -11,7 +11,7 @@ from transformers import AutoTokenizer
 def _check_accelerate_installed():
     """Helper to check if accelerate is installed"""
     try:
-        import accelerate
+        import accelerate  # noqa: F401
 
         return True
     except ImportError:
@@ -286,7 +286,7 @@ def test_train_model_training_arguments():
         assert call_kwargs["logging_strategy"] == "epoch"
         assert call_kwargs["save_strategy"] == "no"
         assert call_kwargs["seed"] == 42
-        assert call_kwargs["disable_tqdm"] == True
+        assert call_kwargs["disable_tqdm"]
 
 
 def test_train_model_compute_metrics_function():

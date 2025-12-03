@@ -3,7 +3,6 @@ Tests for data_processing.py
 """
 
 import pandas as pd
-import pytest
 from src.data_processing import get_tokenizer, tokenize_dataframe, train_val_split
 
 

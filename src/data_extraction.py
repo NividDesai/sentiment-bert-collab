@@ -4,7 +4,6 @@ Functions to load the dataset safely and derive sentiment labels.
 """
 
 import pandas as pd
-from typing import List
 
 # Expected columns from your dataset
 EXPECTED_COLUMNS = ["content", "score"]
