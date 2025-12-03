@@ -37,6 +37,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov black ruff
+        pip install -e .
     
     - name: Lint with Ruff
       run: |
