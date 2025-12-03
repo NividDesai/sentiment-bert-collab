@@ -3,7 +3,6 @@ Tests for utils.py
 """
 
 import pandas as pd
-import pytest
 from src.utils import train_val_split
 
 

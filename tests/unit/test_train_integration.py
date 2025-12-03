@@ -18,7 +18,7 @@ TEST_CSV = "tests/fixtures/integration_test.csv"
 def _check_accelerate_installed():
     """Helper to check if accelerate is installed"""
     try:
-        import accelerate
+        import accelerate  # noqa: F401
 
         return True
     except ImportError:
