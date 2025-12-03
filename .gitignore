@@ -53,6 +53,7 @@ outputs/
 evaluation/
 test_outputs/
 test_model_temp/
+test_model_auto_device/
 *.ckpt
 *.pth
 *.bin
