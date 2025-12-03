@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  # Main sentiment analysis API service
+  sentiment-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentiment-bert-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - models-data:/app/models
+      - training-data:/app/data
+      - outputs-data:/app/outputs
+    environment:
+      - TRANSFORMERS_CACHE=/app/models/cache
+      - HF_HOME=/app/models/cache
+      - PYTHONUNBUFFERED=1
+      - MONGO_URI=mongodb://admin:sentimentpass123@mongodb:27017/
+      - REDIS_HOST=redis-cache
+      - REDIS_PORT=6379
+      - MODEL_PATH=/app/models/final_model
+    networks:
+      - sentiment-network
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+      - redis-cache
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Run FastAPI server
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+
+  # MongoDB for logging predictions and results
+  mongodb:
+    image: mongo:6.0
+    container_name: sentiment-logs-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=sentimentpass123
+      - MONGO_INITDB_DATABASE=sentiment_logs
+    networks:
+      - sentiment-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Redis for caching predictions
+  redis-cache:
+    image: redis:7-alpine
+    container_name: sentiment-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - sentiment-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sentiment-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - sentiment-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sentiment-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+    networks:
+      - sentiment-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+# Named volumes for data persistence
+volumes:
+  models-data:
+    driver: local
+    name: sentiment-models
+  training-data:
+    driver: local
+    name: sentiment-training-data
+  outputs-data:
+    driver: local
+    name: sentiment-outputs
+  mongo-data:
+    driver: local
+    name: sentiment-mongo-db
+  mongo-config:
+    driver: local
+    name: sentiment-mongo-config
+  redis-data:
+    driver: local
+    name: sentiment-redis
+  prometheus-data:
+    driver: local
+    name: sentiment-prometheus
+  grafana-data:
+    driver: local
+    name: sentiment-grafana
+
+# Network configuration
+networks:
+  sentiment-network:
+    driver: bridge
+    name: sentiment-net

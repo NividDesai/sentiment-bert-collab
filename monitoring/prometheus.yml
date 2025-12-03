@@ -1,0 +1,24 @@
+# Prometheus configuration for monitoring sentiment analysis service
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'sentiment-analysis-monitor'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'sentiment-api'
+    static_configs:
+      - targets: ['sentiment-api:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb:27017']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-cache:6379']
