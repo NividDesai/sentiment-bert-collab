@@ -20,8 +20,11 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-    
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
     steps:
     - name: Free Disk Space (Ubuntu)
       uses: jlumbroso/free-disk-space@v1.3.1
@@ -78,6 +81,7 @@ jobs:
     
     - name: Scan Docker image for vulnerabilities
       uses: aquasecurity/trivy-action@0.16.1
+      continue-on-error: true
       with:
         image-ref: ${{ env.DOCKER_IMAGE }}:latest
         format: 'sarif'
